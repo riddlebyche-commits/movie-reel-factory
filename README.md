@@ -1,50 +1,39 @@
 # movie-reel-factory
 
-Free, manually triggered renderer for vertical 9:16 Reels from footage you have the right to use. It scans the full source video for visual scene changes, selects candidate moments, renders MP4s and creates posting notes. Outputs are downloadable from GitHub Actions; optional Google Drive upload is available. It never publishes to Instagram.
+Free, manually triggered renderer for one complete input video, exported as a vertical 9:16 Reel. It does not split the source into short cuts. It rejects videos shorter than 15 seconds, but has no configured maximum duration. Outputs are downloadable from GitHub Actions; optional Google Drive upload is supported. It never publishes to Instagram.
 
 ## What it does
 
-- Scans the complete input video at 1 frame per second for visual scene changes.
-- Selects up to 10 candidate moments (5 by default). Candidates vary from 7 to 20 seconds based on nearby visual activity and never overlap; the selector leaves at least a 2-second gap. The requested candidate count is reduced when the source cannot fit that many clips.
-- Fits the full source frame over a softly blurred vertical background (so portrait and landscape content stays visible), applies subtle contrast/saturation and vignette, adds a brief hook overlay, and fades video and original audio at the start and end.
-- Keeps source audio when present; adds no voice-over or music.
-- Creates one MP4, matching JPG cover image, and posting-notes text file per candidate, plus scene-analysis.json with selected source timestamps.
-- Uploads a GitHub Actions artifact (7-day retention). Optional Drive upload is described below.
+- Uses the whole source from first frame to last; rejects input shorter than 15 seconds.
+- Selects an on-screen hook from `hooks.txt` based on the workflow run number. Each non-empty, non-comment line is used in order; after the last line, the queue cycles back to the first. The hook appears for the first three seconds and is copied into posting notes.
+- Fits the full frame over a softly blurred vertical background, adds subtle visual adjustments and fades the video and original audio at the beginning and end.
+- Keeps original audio when present; adds no voice-over, music or transcription.
+- Creates `reel_full.mp4`, a matching JPG cover, posting notes and `render-report.json` with the full source duration.
+- Uploads a GitHub Actions artifact with 7-day retention. Optional Drive upload is described below.
 
-Automatic scene-change detection uses nearby scene-change density as a rough visual-activity signal; it does not understand story meaning or whether a moment is compelling. It does not generate speech or transcribe audio. Review the videos and timestamps before posting. Effects cannot make copyrighted footage yours or guarantee reach. Use footage and audio you own or are licensed to use. See Meta's [Instagram Best Practices](https://about.fb.com/news/2024/10/best-practices-education-hub-creators-instagram/) and [recommendation guidelines](https://about.fb.com/news/2020/08/recommendation-guidelines/).
+The renderer does not judge story meaning or guarantee reach. Use only footage and audio you have rights to post. Review the final output before posting.
 
 ## Run it
 
 1. In **Actions**, select **Render vertical Reels**, then **Run workflow**.
-2. Set **config_path** to clips.json (or another committed JSON config).
-3. Paste an HTTPS download URL or Google Drive share URL into **video_url**. The runner must be able to access it; a Drive file must allow **Anyone with the link — Viewer**.
-4. When the run finishes, open its page and download the **reel-package-<run number>** artifact. It contains MP4s, posting notes and the timestamp report.
+2. Set **config_path** to `clips.json` (or another repository JSON config).
+3. Paste an HTTPS download URL or Google Drive share URL into **video_url**. The runner must be able to access it.
+4. When the run finishes, open the run page and download the `reel-package-<run number>` artifact. It contains the complete vertical MP4, cover image, posting notes and report.
 
-The workflow form cannot receive a local file upload. Never commit movie files. For sensitive footage, make the repository private and use a private, short-lived transfer link that the runner can access; avoid public Drive links. The workflow input and logs may be visible to repository users, so do not paste credentials or long-lived private links. GitHub Actions artifacts are also accessible to people with repository access.
+The workflow form cannot receive a local file upload. Never commit movie files. For sensitive footage, use a private, short-lived transfer link that the runner can access. The workflow input and logs may be visible to repository users, so do not paste credentials or long-lived private links. Artifacts are accessible to people with repository access.
 
-## Configure the run
+## Configure
 
-Edit clips.json. It contains no start/end times and no clip-duration setting. The full source is scanned; candidate cut points and source ranges are chosen automatically.
+Edit `clips.json` for title and posting metadata. There are no clip start/end, duration or hook fields in this JSON.
 
-```json
-{
-  "movie_title": "Example Film",
-  "candidate_count": 5,
-  "hook": "Why this moment stays with you",
-  "content_keywords": ["cinematic film moment", "tense confrontation"],
-  "hashtags": ["#FilmScene", "#Cinema", "#MovieMoment"],
-  "music_mood": "cinematic suspense"
-}
-```
+Edit `hooks.txt` to set the on-video hook queue. Put one hook per line (maximum 80 characters). Blank lines and lines starting with `#` are ignored. Run 1 uses the first hook, run 2 the second, and so on; after the final hook it cycles to the first. A rerun uses the same run number and therefore the same hook.
 
 - **movie_title**: required, up to 120 characters.
-- **candidate_count**: optional, 1–10; defaults to 5.
-- **hook**: optional short on-video opening line, up to 80 characters.
 - **content_keywords**: optional, up to five short phrases used in caption drafts.
 - **hashtags**: optional, up to five relevant tags.
-- **music_mood**: optional mood phrase for a search idea in the notes.
+- **music_mood**: optional phrase to guide a search idea in the notes.
 
-The captions are editable templates using the title, hook and keywords, not AI-written scene descriptions. Music notes suggest a search phrase only; there is no reliable free API here that can identify what is trending in your Instagram account, region and upload day. Check Instagram's music picker and choose an eligible track yourself. The source audio remains in the video. If you add licensed in-app music, check whether the original audio should be muted.
+Captions are editable templates, not AI-written scene descriptions. Music notes suggest a search phrase, not a live trend result; choose a currently available track yourself in Instagram. The complete source audio remains in the rendered video.
 
 ## Optional Google Drive upload
 
@@ -53,19 +42,20 @@ Make the repository **private before adding Drive credentials**. GitHub artifact
 In **Settings → Secrets and variables → Actions**, add:
 
 - Secret **RCLONE_CONFIG_CONTENT**: contents of an rclone config with an OAuth-authorized Google Drive remote named drive. Keep its token private; never commit it or paste it into workflow inputs.
-- Variable **DRIVE_UPLOAD_ENABLED**: true.
-- Variable **DRIVE_DESTINATION**: for example drive:Reels (the folder must be accessible to that Google account).
+- Variable **DRIVE_UPLOAD_ENABLED**: `true`.
+- Variable **DRIVE_DESTINATION**: for example `drive:Reels`.
 
-Disable Drive upload by removing the secret or changing the variable from true. Limit repository write access because anyone who can alter workflow code could misuse secrets.
+Disable Drive upload by changing the variable or removing the secret. Limit repository write access because workflow changes can use configured secrets.
 
 ## Limits and local use
 
-The source file limit is 5 GB. Full-length video scanning can take hours; GitHub-hosted jobs have a 6-hour maximum and free Actions usage/storage limits depend on repository visibility and account plan. A long or high-resolution source may exceed available time, disk, or free usage. GitHub's current [Actions limits](https://docs.github.com/en/actions/reference/limits) and [usage details](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions) can change. Public-repository Actions usage currently has no billable minutes for standard GitHub-hosted runners, but artifact storage and limits still apply; verify your plan before repeated large runs.
+There is no configured maximum duration. Practical limits still apply: source files are capped at 5 GB, the GitHub-hosted job has a 6-hour timeout, and runner disk, Actions usage and artifact storage depend on your plan and repository settings. Long or high-resolution video may exceed time, disk or free usage limits. See GitHub's current [Actions limits](https://docs.github.com/en/actions/reference/limits) and [usage details](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions).
 
-Local use requires Python 3.10+ and FFmpeg with **drawtext** and **libx264**:
+Local use requires Python 3.10+ and FFmpeg with `drawtext` and `libx264`:
 
 ```sh
-python reel_renderer.py --video /path/to/authorized-video.mp4 --config clips.json --output-dir reels
+python reel_renderer.py --video /path/to/authorized-video.mp4 --config clips.json --hook-queue hooks.txt --run-number 1 --output-dir reels
 ```
 
 No Python packages or AI keys are required for rendering.
+

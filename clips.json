@@ -1,8 +1,7 @@
 {
   "movie_title": "Example Film",
-  "candidate_count": 5,
-  "hook": "Why this scene stays with you",
   "content_keywords": ["cinematic movie scene", "film moment"],
   "hashtags": ["#FilmScene", "#Cinema", "#MovieMoment"],
   "music_mood": "cinematic suspense"
 }
+

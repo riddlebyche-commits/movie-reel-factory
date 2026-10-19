@@ -1,0 +1,6 @@
+# One on-screen hook per run, in queue order; maximum 80 characters per hook.
+# Run 1 uses line 1, run 2 uses line 2, and the queue cycles after the final hook.
+A moment that changes everything
+The detail you might have missed
+What would you do in this moment?
+
