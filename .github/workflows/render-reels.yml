@@ -69,14 +69,14 @@ jobs:
               subprocess.run([
                   'curl', '--proto', '=https', '--proto-redir', '=https',
                   '--fail', '--location', '--silent', '--show-error',
-                  '--max-time', '1800', '--max-filesize', '2000000000',
+                  '--max-time', '1800', '--max-filesize', '5000000000',
                   url, '--output', output
               ], check=True)
           path = pathlib.Path(output)
           if not path.is_file() or path.stat().st_size == 0:
               raise SystemExit('Download produced an empty file')
-          if path.stat().st_size > 2_000_000_000:
-              raise SystemExit('Input video exceeds the 2 GB limit')
+          if path.stat().st_size > 5_000_000_000:
+              raise SystemExit('Input video exceeds the 5 GB limit')
           PY
 
       - name: Render
