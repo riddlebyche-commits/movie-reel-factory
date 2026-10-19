@@ -1,0 +1,72 @@
+name: Render vertical Reels
+
+on:
+  workflow_dispatch:
+    inputs:
+      video_url:
+        description: HTTPS download URL for authorized source video (see README security note)
+        required: true
+        type: string
+      config_path:
+        description: Repository path to a JSON clip config
+        required: true
+        default: clips.json
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reel-render-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check out configuration
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ffmpeg
+
+      - name: Validate URL and download authorized input
+        env:
+          VIDEO_URL: ${{ inputs.video_url }}
+        run: |
+          set -euo pipefail
+          echo "::add-mask::$VIDEO_URL"
+          python - <<'PY'
+          import os, urllib.parse
+          url = urllib.parse.urlparse(os.environ['VIDEO_URL'])
+          if url.scheme != 'https' or not url.hostname or url.username or url.password:
+              raise SystemExit('Use a valid HTTPS URL without embedded username/password')
+          PY
+          curl --proto '=https' --proto-redir '=https' --fail --location --silent --show-error --max-time 1800 \
+            --max-filesize 2000000000 "$VIDEO_URL" --output input-video
+          test -s input-video
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Render
+        env:
+          CONFIG_PATH: ${{ inputs.config_path }}
+        run: |
+          test -f "$CONFIG_PATH"
+          python reel_renderer.py --video input-video --config "$CONFIG_PATH" --output-dir reels
+
+      - name: Upload finished MP4 files
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-reels-${{ github.run_number }}
+          path: reels/*.mp4
+          if-no-files-found: error
+          retention-days: 7
