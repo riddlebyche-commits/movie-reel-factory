@@ -1,16 +1,8 @@
 {
   "movie_title": "Example Film",
-  "music_mood": "cinematic suspense",
-  "hashtags": ["#FilmScene", "#Cinema"],
-  "clips": [
-    {
-      "label": "reel_01",
-      "start": "00:00",
-      "end": "00:20",
-      "title": "The moment everything changes",
-      "caption": "What would you have done in this moment?",
-      "hashtags": ["#FilmScene", "#MovieMoment", "#Cinema"],
-      "music_mood": "dramatic piano tension"
-    }
-  ]
+  "candidate_count": 5,
+  "hook": "Why this scene stays with you",
+  "content_keywords": ["cinematic movie scene", "film moment"],
+  "hashtags": ["#FilmScene", "#Cinema", "#MovieMoment"],
+  "music_mood": "cinematic suspense"
 }
