@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       config_path:
-        description: Repository path to a JSON clip config
+        description: Repository path to a JSON metadata config; timestamps are selected automatically
         required: true
         default: clips.json
         type: string
@@ -23,7 +23,7 @@ concurrency:
 jobs:
   render:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 360
     steps:
       - name: Check out configuration
         uses: actions/checkout@v4
