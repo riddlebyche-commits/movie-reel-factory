@@ -1,13 +1,16 @@
 {
-  "captions": [
-    "Replace this with an authorized caption"
-  ],
+  "movie_title": "Example Film",
+  "music_mood": "cinematic suspense",
+  "hashtags": ["#FilmScene", "#Cinema"],
   "clips": [
     {
       "label": "reel_01",
       "start": "00:00",
       "end": "00:20",
-      "caption": "A short sample caption"
+      "title": "The moment everything changes",
+      "caption": "What would you have done in this moment?",
+      "hashtags": ["#FilmScene", "#MovieMoment", "#Cinema"],
+      "music_mood": "dramatic piano tension"
     }
   ]
 }
