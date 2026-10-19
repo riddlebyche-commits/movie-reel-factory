@@ -1,0 +1,13 @@
+{
+  "captions": [
+    "Replace this with an authorized caption"
+  ],
+  "clips": [
+    {
+      "label": "reel_01",
+      "start": "00:00",
+      "end": "00:20",
+      "caption": "A short sample caption"
+    }
+  ]
+}
