@@ -16,10 +16,10 @@ This is a small independent implementation inspired by the capabilities of [goon
 1. Open the repository on GitHub and select **Actions**. If prompted, enable Actions for the repository.
 2. Select **Render vertical Reels** and click **Run workflow**.
 3. Set `config_path` to a committed JSON configuration (start with `clips.json`).
-4. For `video_url`, use an HTTPS download URL for footage you are authorized to process. The workflow masks it from normal logs. Use only a temporary, read-only link that expires soon; workflow input values remain visible to people who can inspect the run, so do not put credentials or private URLs in a public repository. For real/private footage, make this repository private before running it, or use a private CI runner/storage arrangement. Do not commit the movie to Git.
+4. For `video_url`, paste either a direct HTTPS video download URL or a Google Drive share URL for footage you are authorized to process. Google Drive files must be accessible to the workflow runner; for this workflow, that means setting General access to **Anyone with the link — Viewer**. The run input and Drive URL can appear in Actions logs and run details. Because this repository is public, do not use it with private footage or a sensitive link; use only footage you are comfortable exposing, or make the repository private before running. Never commit movie files to Git.
 5. When the run finishes, open the run page, find **Artifacts**, and download `rendered-reels-<run number>`. The ZIP contains one MP4 per configured clip and expires after 7 days.
 
-GitHub's **Run workflow** form does not accept a local file upload. Transfer the input through a temporary HTTPS location you control, then paste its expiring read-only download link. Never use a public movie URL unless you have permission to download and edit it. Keep copyrighted footage out of public repositories, logs, and artifacts shared with people who should not access it.
+GitHub's **Run workflow** form does not accept a local file upload. A Google Drive share link works with the workflow's Drive downloader, but it must permit access to the runner. Anyone with repository access may see workflow inputs, logs, and artifacts. This repository is public, so use only footage and links you are comfortable exposing. The workflow does not publish to Instagram or upload to Drive.
 
 ## Configure clips
 
