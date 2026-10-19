@@ -33,7 +33,7 @@ jobs:
       - name: Install FFmpeg
         run: |
           sudo apt-get update
-          sudo apt-get install --yes ffmpeg
+          sudo apt-get install --yes ffmpeg fonts-dejavu-core
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -64,7 +64,7 @@ jobs:
           if host == 'drive.google.com' or host.endswith('.drive.google.com'):
               result = gdown.download(url, output=output, quiet=False, fuzzy=True)
               if not result:
-                  raise SystemExit("Google Drive download failed. Confirm that the file's access is set to 'Anyone with the link' as Viewer, then retry with its share URL.")
+                  raise SystemExit('Google Drive download failed; check sharing and retry its share URL.')
           else:
               subprocess.run([
                   'curl', '--proto', '=https', '--proto-redir', '=https',
@@ -79,17 +79,36 @@ jobs:
               raise SystemExit('Input video exceeds the 5 GB limit')
           PY
 
-      - name: Render
+      - name: Render Reels and posting notes
         env:
           CONFIG_PATH: ${{ inputs.config_path }}
         run: |
           test -f "$CONFIG_PATH"
           python reel_renderer.py --video input-video --config "$CONFIG_PATH" --output-dir reels
 
-      - name: Upload finished MP4 files
+      - name: Upload outputs to GitHub artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rendered-reels-${{ github.run_number }}
-          path: reels/*.mp4
+          name: reel-package-${{ github.run_number }}
+          path: reels/*
           if-no-files-found: error
           retention-days: 7
+
+      - name: Upload outputs to Google Drive
+        if: ${{ vars.DRIVE_UPLOAD_ENABLED == 'true' }}
+        env:
+          RCLONE_CONFIG_CONTENT: ${{ secrets.RCLONE_CONFIG_CONTENT }}
+          DRIVE_DESTINATION: ${{ vars.DRIVE_DESTINATION }}
+        run: |
+          set -euo pipefail
+          if [ -z "$RCLONE_CONFIG_CONTENT" ] || [ -z "$DRIVE_DESTINATION" ]; then
+            echo "Drive upload is enabled, but the secret or destination variable is missing." >&2
+            exit 1
+          fi
+          sudo apt-get update
+          sudo apt-get install --yes rclone
+          config="$RUNNER_TEMP/rclone.conf"
+          trap 'rm -f "$config"' EXIT
+          umask 077
+          printf '%s' "$RCLONE_CONFIG_CONTENT" > "$config"
+          RCLONE_CONFIG="$config" rclone copy reels "$DRIVE_DESTINATION" --transfers 2 --checkers 2
