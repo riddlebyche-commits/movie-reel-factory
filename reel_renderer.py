@@ -3,7 +3,7 @@
 import argparse, json, re, shutil, subprocess, sys
 from pathlib import Path
 
-MAX_INPUT_BYTES = 2_000_000_000
+MAX_INPUT_BYTES = 5_000_000_000
 
 def seconds(value, name):
     if isinstance(value, (int, float)) and not isinstance(value, bool): result = float(value)
@@ -42,7 +42,7 @@ def main():
         ffmpeg=shutil.which('ffmpeg'); ffprobe=shutil.which('ffprobe')
         if not ffmpeg or not ffprobe: raise ValueError('FFmpeg and ffprobe must be installed')
         video=Path(args.video).resolve()
-        if not video.is_file() or not 0 < video.stat().st_size <= MAX_INPUT_BYTES: raise ValueError('Input video missing, empty, or over 2 GB')
+        if not video.is_file() or not 0 < video.stat().st_size <= MAX_INPUT_BYTES: raise ValueError('Input video missing, empty, or over 5 GB')
         probe=subprocess.run([ffprobe,'-v','error','-show_entries','format=duration','-of','default=noprint_wrappers=1:nokey=1',str(video)],capture_output=True,text=True,check=True,timeout=30)
         duration=float(probe.stdout.strip()); clips=load_config(args.config)
         if any(end>duration for _,_,end,_ in clips): raise ValueError(f'Clip end exceeds source duration ({duration:.2f}s)')
