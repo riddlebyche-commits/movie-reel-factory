@@ -34,7 +34,7 @@ Edit `clips.json` and commit the configuration. Times may be numbers in seconds,
 }
 ```
 
-Constraints: 1–20 clips, each at most 180 seconds; caption length at most 240 characters; input at most 2 GB; end time must be within the source duration. The renderer outputs 1080×1920 H.264/AAC MP4, centered crop, with audio when present. Keep labels to letters, numbers, underscores, and hyphens.
+Constraints: 1–20 clips, each at most 180 seconds; caption length at most 240 characters; input at most 5 GB; end time must be within the source duration. The renderer outputs 1080×1920 H.264/AAC MP4, centered crop, with audio when present. Keep labels to letters, numbers, underscores, and hyphens.
 
 ## Local rendering (optional)
 
