@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       config_path:
-        description: Repository path to a JSON metadata config; timestamps are selected automatically
+        description: Repository path to a JSON metadata config
         required: true
         default: clips.json
         type: string
@@ -79,12 +79,12 @@ jobs:
               raise SystemExit('Input video exceeds the 5 GB limit')
           PY
 
-      - name: Render Reels and posting notes
+      - name: Render full video and posting notes
         env:
           CONFIG_PATH: ${{ inputs.config_path }}
         run: |
           test -f "$CONFIG_PATH"
-          python reel_renderer.py --video input-video --config "$CONFIG_PATH" --output-dir reels
+          python reel_renderer.py --video input-video --config "$CONFIG_PATH" --hook-queue hooks.txt --run-number "$GITHUB_RUN_NUMBER" --output-dir reels
 
       - name: Upload outputs to GitHub artifact
         uses: actions/upload-artifact@v4
@@ -112,3 +112,4 @@ jobs:
           umask 077
           printf '%s' "$RCLONE_CONFIG_CONTENT" > "$config"
           RCLONE_CONFIG="$config" rclone copy reels "$DRIVE_DESTINATION" --transfers 2 --checkers 2
+
